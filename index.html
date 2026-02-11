@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Letter For You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Covered+By+Your+Grace&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Caveat', cursive;
+            background: linear-gradient(135deg, #0a1f1a 0%, #1a3a2e 30%, #2d5a4a 70%, #1a3a2e 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+
+        html {
+            height: -webkit-fill-available;
+        }
+
+        /* Disclaimer screen */
+        .disclaimer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1f1a 0%, #1a3a2e 50%, #0a1f1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .disclaimer-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .disclaimer-box {
+            max-width: min(500px, 88vw);
+            padding: 45px 40px;
+            text-align: center;
+            color: #d4af37;
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .disclaimer-box .disclaimer-icon {
+            font-size: 48px;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .disclaimer-box .disclaimer-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #d4af37;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .disclaimer-box .disclaimer-text {
+            font-family: 'Caveat', cursive;
+            font-size: 20px;
+            line-height: 1.8;
+            color: rgba(244, 232, 208, 0.85);
+            margin-bottom: 35px;
+            font-weight: 600;
+        }
+
+        .disclaimer-btn {
+            display: inline-block;
+            padding: 14px 45px;
+            background: linear-gradient(135deg, #2d5a4a, #1a3a2e);
+            color: #d4af37;
+            font-family: 'Dancing Script', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            border: 2px solid #d4af37;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+
+        .disclaimer-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.4);
+            background: linear-gradient(135deg, #3d6a5a, #2a4a3e);
+        }
+
+        .disclaimer-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Animated starry background */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Candlelight vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0, 0, 0, 0.3) 70%, rgba(0, 0, 0, 0.6) 100%),
+                radial-gradient(ellipse at 30% 20%, rgba(255, 200, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255, 150, 50, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 10000;
+            animation: flicker 3s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #d4af37;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+            transition: all 1s ease;
+        }
+
+        /* Constellation stars for letter B */
+        .constellation-star {
+            width: 4px;
+            height: 4px;
+            background: #d4af37;
+            box-shadow: 0 0 10px #d4af37;
+            opacity: 0;
+            transition: all 2s ease;
+        }
+
+        .envelope-wrapper.opened ~ .stars .constellation-star {
+            opacity: 1;
+        }
+
+        /* Constellation lines */
+        .constellation-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            transform-origin: left center;
+            opacity: 0;
+            transition: all 2s ease 0.5s;
+        }
+
+        .envelope-wrapper.opened ~ .stars .constellation-line {
+            opacity: 0.6;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Floating rose petals */
+        .petal {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 182, 193, 0.6);
+            border-radius: 50% 0 50% 0;
+            animation: float 15s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            perspective: 1500px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            width: min(550px, 85vw);
+            aspect-ratio: 550 / 380;
+            cursor: pointer;
+            transition: transform 0.4s ease;
+        }
+
+        .envelope-wrapper:hover:not(.opened) {
+            transform: scale(1.08) translateY(-10px);
+        }
+
+        @media (hover: none) {
+            .envelope-wrapper:hover:not(.opened) {
+                transform: none;
+            }
+        }
+
+        .envelope-wrapper.opened {
+            cursor: default;
+        }
+
+        .envelope {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Envelope back */
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e8d5b7 0%, #d4c4a8 50%, #c9b896 100%);
+            border-radius: 6px;
+            box-shadow: 0 15px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+        }
+
+        /* Twine wrapping the envelope */
+        .envelope-back::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -4%;
+            right: -4%;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(139, 90, 43, 0.6) 5%, 
+                rgba(160, 100, 50, 0.8) 15%, 
+                rgba(139, 90, 43, 0.7) 50%, 
+                rgba(160, 100, 50, 0.8) 85%, 
+                rgba(139, 90, 43, 0.6) 95%, 
+                transparent 100%);
+            transform: translateY(-50%);
+            box-shadow: 
+                0 1px 2px rgba(0, 0, 0, 0.3),
+                0 -1px 1px rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Vertical twine */
+        .twine-vertical {
+            position: absolute;
+            top: 0%;
+            bottom: 0%;
+            left: 50%;
+            width: 3px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                rgba(139, 90, 43, 0.6) 2%, 
+                rgba(160, 100, 50, 0.8) 8%, 
+                rgba(139, 90, 43, 0.7) 50%, 
+                rgba(160, 100, 50, 0.8) 92%, 
+                rgba(139, 90, 43, 0.6) 98%, 
+                transparent 100%);
+            transform: translateX(-50%);
+            box-shadow: 
+                1px 0 2px rgba(0, 0, 0, 0.3),
+                -1px 0 1px rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Twine knot/bow at center */
+        .twine-knot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(160, 100, 50, 0.9), rgba(120, 70, 30, 0.8));
+            box-shadow: 
+                0 1px 4px rgba(0, 0, 0, 0.4),
+                inset 0 1px 2px rgba(255, 200, 150, 0.3);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Bow loops */
+        .twine-knot::before,
+        .twine-knot::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 12px;
+            border: 2px solid rgba(139, 90, 43, 0.7);
+            border-radius: 50%;
+            background: transparent;
+            transform: translateY(-50%);
+        }
+
+        .twine-knot::before {
+            right: 100%;
+            transform: translateY(-50%) rotate(-15deg);
+        }
+
+        .twine-knot::after {
+            left: 100%;
+            transform: translateY(-50%) rotate(15deg);
+        }
+
+        /* Envelope flap */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: calc(min(550px, 85vw) / 2) solid transparent;
+            border-right: calc(min(550px, 85vw) / 2) solid transparent;
+            border-top: calc(min(550px, 85vw) * 380 / 550 / 2) solid #c9b896;
+            transform-origin: top center;
+            transition: transform 0.8s ease;
+            z-index: 3;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .envelope-wrapper.opened .envelope-flap {
+            transform: rotateX(-180deg);
+        }
+
+        /* Hide twine when opened */
+        .envelope-wrapper.opened .twine-vertical,
+        .envelope-wrapper.opened .twine-knot,
+        .envelope-wrapper.opened .envelope-back::before {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Wax seal */
+        .wax-seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95px;
+            height: 95px;
+            background: radial-gradient(circle, #c0392b 0%, #a93226 40%, #922b21 70%, #7b241c 100%);
+            border-radius: 50%;
+            z-index: 4;
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.5),
+                inset 0 3px 8px rgba(255, 100, 100, 0.3),
+                inset 0 -3px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            animation: heartbeat 1.8s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%   { transform: translate(-50%, -50%) scale(1); }
+            14%  { transform: translate(-50%, -50%) scale(1.08); }
+            28%  { transform: translate(-50%, -50%) scale(1); }
+            42%  { transform: translate(-50%, -50%) scale(1.05); }
+            56%  { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .envelope-wrapper.opened .wax-seal {
+            animation: none;
+        }
+
+        .wax-seal::before {
+            content: 'B';
+            font-family: 'Dancing Script', cursive;
+            font-size: 52px;
+            font-weight: 700;
+            color: #1a5c32;
+            text-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.4),
+                0 0 8px rgba(26, 92, 50, 0.3);
+        }
+
+        .wax-seal:hover:not(.opened) {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 
+                0 5px 20px rgba(192, 57, 43, 0.5),
+                inset 0 3px 8px rgba(255, 100, 100, 0.4),
+                inset 0 -3px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .envelope-wrapper.opened .wax-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.3) rotate(180deg);
+        }
+
+        /* Spider-Man Heart Stamp - top left */
+
+        /* Letter */
+        .letter {
+            position: fixed;
+            width: 90vw;
+            max-width: 800px;
+            height: 85vh;
+            background: 
+                linear-gradient(to bottom, rgba(139, 69, 19, 0.03), transparent 30%),
+                linear-gradient(to right, rgba(139, 69, 19, 0.02), transparent 20%),
+                linear-gradient(120deg, #f4e8d0 0%, #f0e6c8 30%, #ebe0be 60%, #e8d8b0 100%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            border-radius: 6px;
+            padding: 70px 60px 60px 60px;
+            box-shadow: 
+                0 20px 80px rgba(0, 0, 0, 0.5),
+                inset 0 0 100px rgba(139, 69, 19, 0.05);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.9s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 100;
+            overflow-y: auto;
+            line-height: 2;
+            color: #2d3436;
+        }
+
+        /* Aged paper texture */
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 69, 19, 0.02) 2px, rgba(139, 69, 19, 0.02) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(139, 69, 19, 0.02) 2px, rgba(139, 69, 19, 0.02) 4px);
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Coffee stains */
+        .letter::after {
+            content: '';
+            position: absolute;
+            top: 50px;
+            right: 80px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.15), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .coffee-stain {
+            position: absolute;
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.1), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .stain1 {
+            top: 20%;
+            left: 10%;
+            width: 80px;
+            height: 80px;
+        }
+
+        .stain2 {
+            bottom: 15%;
+            right: 15%;
+            width: 50px;
+            height: 50px;
+        }
+
+        .envelope-wrapper.opened .letter {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .letter h1 {
+            font-size: 42px;
+            color: #2d5a4a;
+            margin-bottom: 30px;
+            text-align: center;
+            font-family: 'Dancing Script', cursive;
+            position: relative;
+            font-weight: 700;
+        }
+
+        .letter p {
+            font-size: 22px;
+            margin-bottom: 25px;
+            text-indent: 40px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+            font-weight: 600;
+        }
+
+        /* Ink imperfections - subtle opacity variations mimicking pressure changes */
+        .letter p.fade-in-text:nth-of-type(1).visible { opacity: 0.95 !important; }
+        .letter p.fade-in-text:nth-of-type(2).visible { opacity: 0.92 !important; }
+        .letter p.fade-in-text:nth-of-type(3).visible { opacity: 0.96 !important; }
+        .letter p.fade-in-text:nth-of-type(4).visible { opacity: 0.94 !important; }
+        .letter p.fade-in-text:nth-of-type(5).visible { opacity: 0.93 !important; }
+        .letter p.fade-in-text:nth-of-type(6).visible { opacity: 0.95 !important; }
+        .letter p.fade-in-text:nth-of-type(7).visible { opacity: 0.91 !important; }
+        .letter p.fade-in-text:nth-of-type(8).visible { opacity: 0.96 !important; }
+        .letter p.fade-in-text:nth-of-type(9).visible { opacity: 0.94 !important; }
+        .letter p.fade-in-text:nth-of-type(10).visible { opacity: 0.93 !important; }
+
+        .letter p.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .letter .signature {
+            text-align: right;
+            font-style: italic;
+            margin-top: 40px;
+            font-size: 26px;
+            color: #2d5a4a;
+            font-family: 'Dancing Script', cursive;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+            font-weight: 700;
+        }
+
+        .letter .signature.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+
+
+        /* Close button */
+        .close-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            background: rgba(139, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-btn:hover {
+            background: rgba(139, 0, 0, 0.9);
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        .close-btn::before,
+        .close-btn::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 3px;
+            background: #f4e8d0;
+            border-radius: 2px;
+        }
+
+        .close-btn::before {
+            transform: rotate(45deg);
+        }
+
+        .close-btn::after {
+            transform: rotate(-45deg);
+        }
+
+        /* Instruction text */
+        .instruction {
+            position: absolute;
+            bottom: -100px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #d4af37;
+            font-size: 22px;
+            font-style: italic;
+            opacity: 0.9;
+            animation: pulse 2s infinite;
+            white-space: nowrap;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-5px); }
+        }
+
+        .envelope-wrapper.opened .instruction {
+            display: none;
+        }
+
+        /* Hidden message - appears above envelope after closing letter */
+        .hidden-message {
+            position: absolute;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(212, 175, 55, 0);
+            font-size: 19px;
+            transition: all 1s ease;
+            user-select: none;
+            font-family: 'Dancing Script', cursive;
+            text-align: center;
+            max-width: 90%;
+            pointer-events: none;
+            opacity: 0;
+            line-height: 1.8;
+            font-weight: 600;
+        }
+
+        .hidden-message.revealed {
+            color: rgba(212, 175, 55, 0.9);
+            opacity: 1;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            pointer-events: auto;
+        }
+
+        .envelope-wrapper.opened .hidden-message.revealed {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Fortune cookie */
+        .fortune-cookie {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 1000;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+        }
+
+        .fortune-cookie.show {
+            opacity: 0.8;
+        }
+
+        .fortune-cookie:hover {
+            opacity: 1;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .fortune-cookie svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .fortune-message {
+            position: fixed;
+            bottom: 100px;
+            left: 30px;
+            background: rgba(45, 90, 74, 0.95);
+            color: #f4e8d0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 16px;
+            font-weight: 600;
+            max-width: 280px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            border: 2px solid #d4af37;
+            z-index: 1001;
+        }
+
+        .fortune-message.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Close button for fortune message */
+        .fortune-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(139, 0, 0, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .fortune-close:hover {
+            background: rgba(139, 0, 0, 1);
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .fortune-close::before,
+        .fortune-close::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 2px;
+            background: #f4e8d0;
+            border-radius: 1px;
+        }
+
+        .fortune-close::before {
+            transform: rotate(45deg);
+        }
+
+        .fortune-close::after {
+            transform: rotate(-45deg);
+        }
+
+        /* Infinity Stones */
+        .infinity-stone {
+            position: fixed;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0.85;
+            transition: all 0.4s ease;
+            z-index: 50;
+            animation: floatStone 4s ease-in-out infinite;
+            box-shadow: 0 0 25px currentColor, 0 0 8px currentColor, inset 0 0 12px rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes floatStone {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .infinity-stone:hover {
+            opacity: 1;
+            transform: scale(1.3);
+            box-shadow: 0 0 30px currentColor, inset 0 0 15px rgba(255, 255, 255, 0.7);
+        }
+
+        .infinity-stone.collected {
+            animation: collectStone 0.8s ease forwards;
+        }
+
+        @keyframes collectStone {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Individual stone colors */
+        .stone-space { 
+            background: radial-gradient(circle, #7b6ee6, #5a4fd0);
+            color: #7b6ee6;
+            top: 15%;
+            left: 12%;
+            animation-delay: 0s;
+        }
+
+        .stone-reality { 
+            background: radial-gradient(circle, #e83a3a, #cc2828);
+            color: #e83a3a;
+            top: 25%;
+            right: 15%;
+            animation-delay: 0.5s;
+        }
+
+        .stone-power { 
+            background: radial-gradient(circle, #b05cf0, #8e35d6);
+            color: #b05cf0;
+            bottom: 30%;
+            left: 18%;
+            animation-delay: 1s;
+        }
+
+        .stone-mind { 
+            background: radial-gradient(circle, #ffe014, #f0c800);
+            color: #ffe014;
+            top: 40%;
+            right: 20%;
+            animation-delay: 1.5s;
+        }
+
+        .stone-time { 
+            background: radial-gradient(circle, #10e8b0, #08d098);
+            color: #10e8b0;
+            bottom: 25%;
+            right: 12%;
+            animation-delay: 2s;
+        }
+
+        .stone-soul { 
+            background: radial-gradient(circle, #ffa580, #ff7f50);
+            color: #ffa580;
+            top: 50%;
+            left: 10%;
+            animation-delay: 2.5s;
+        }
+
+        /* Infinity Gauntlet reward */
+        .gauntlet-reward {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #2d5a4a, #1a3a2e);
+            color: #d4af37;
+            padding: 40px 50px;
+            border-radius: 20px;
+            font-family: 'Caveat', cursive;
+            font-size: 26px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(212, 175, 55, 0.4);
+            border: 3px solid #d4af37;
+            z-index: 3000;
+            max-width: 620px;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .gauntlet-reward.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .gauntlet-reward .stones-display {
+            font-size: 40px;
+            margin: 20px 0;
+            letter-spacing: 10px;
+        }
+
+        /* Close button for gauntlet reward */
+        .gauntlet-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            background: rgba(139, 0, 0, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .gauntlet-close:hover {
+            background: rgba(139, 0, 0, 1);
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .gauntlet-close::before,
+        .gauntlet-close::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 2.5px;
+            background: #f4e8d0;
+            border-radius: 1px;
+        }
+
+        .gauntlet-close::before {
+            transform: rotate(45deg);
+        }
+
+        .gauntlet-close::after {
+            transform: rotate(-45deg);
+        }
+
+        /* Infinity button - appears after collecting all stones */
+        .infinity-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #2d5a4a, #1a3a2e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 
+                0 5px 20px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(212, 175, 55, 0.3);
+            border: 3px solid #d4af37;
+            z-index: 1000;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .infinity-button.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .infinity-button:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 8px 30px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(212, 175, 55, 0.6);
+        }
+
+        .infinity-button .infinity-symbol {
+            font-size: 36px;
+            color: #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 5px 20px rgba(0, 0, 0, 0.4),
+                    0 0 20px rgba(212, 175, 55, 0.3);
+            }
+            50% {
+                box-shadow: 
+                    0 5px 25px rgba(0, 0, 0, 0.5),
+                    0 0 35px rgba(212, 175, 55, 0.6);
+            }
+        }
+
+        /* Scrollbar styling */
+        .letter::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .letter::-webkit-scrollbar-track {
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 10px;
+        }
+
+        .letter::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #2d5a4a, #1a3a2e);
+            border-radius: 10px;
+        }
+
+        .letter::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #3d6a5a, #2a4a3e);
+        }
+
+        /* Date stamp */
+        .date-stamp {
+            position: absolute;
+            top: 30px;
+            left: 50px;
+            font-family: 'Covered By Your Grace', cursive;
+            font-size: 14px;
+            color: rgba(139, 0, 0, 0.5);
+            transform: rotate(-5deg);
+        }
+
+        /* Interactive elements hint */
+        .hint {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            color: rgba(212, 175, 55, 0.5);
+            font-size: 14px;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1000;
+        }
+
+        .hint.show {
+            opacity: 1;
+        }
+
+        /* Infinity stones hint */
+        .stones-hint {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(212, 175, 55, 0.85);
+            font-size: 15px;
+            font-family: 'Dancing Script', cursive;
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transition: all 1s ease;
+            z-index: 1000;
+            pointer-events: none;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+
+        .stones-hint.show {
+            opacity: 1;
+        }
+
+        .envelope-wrapper.opened .stones-hint {
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .stones-hint {
+                font-size: 13px;
+                top: -50px;
+                white-space: normal;
+                max-width: 85vw;
+            }
+        }
+
+        /* Heart click effect */
+        .heart-pop {
+            position: fixed;
+            font-size: 30px;
+            color: #ff69b4;
+            pointer-events: none;
+            animation: heartPop 1s ease-out forwards;
+            z-index: 1001;
+        }
+
+        @keyframes heartPop {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0);
+            }
+            50% {
+                transform: translateY(-30px) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(1);
+            }
+        }
+
+        /* Sparkle trail on letter scroll */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+            animation: sparkleFade 1.2s ease-out forwards;
+        }
+
+        .sparkle::before {
+            content: '';
+            display: block;
+            width: var(--size, 5px);
+            height: var(--size, 5px);
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.9), rgba(212, 175, 55, 0) 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(212, 175, 55, 0.5);
+        }
+
+        @keyframes sparkleFade {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            40% {
+                opacity: 0.8;
+                transform: translateY(-8px) scale(1.1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-25px) scale(0.3);
+            }
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+
+            .wax-seal {
+                width: 75px;
+                height: 75px;
+            }
+
+            .wax-seal::before {
+                font-size: 40px;
+            }
+
+            .letter {
+                width: 95vw;
+                height: 90vh;
+                padding: 50px 25px 40px 25px;
+            }
+
+            .letter h1 {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+
+            .letter p {
+                font-size: 17px;
+                margin-bottom: 20px;
+                text-indent: 25px;
+                line-height: 1.8;
+            }
+
+            .letter .signature {
+                font-size: 20px;
+                margin-top: 30px;
+            }
+
+            .letter .signature span {
+                font-size: 15px !important;
+            }
+
+            .close-btn {
+                width: 40px;
+                height: 40px;
+                top: 15px;
+                right: 15px;
+            }
+
+            .close-btn::before,
+            .close-btn::after {
+                width: 18px;
+            }
+
+            .date-stamp {
+                font-size: 11px;
+                left: 25px;
+                top: 25px;
+            }
+
+            .instruction {
+                font-size: 18px;
+                bottom: -80px;
+                white-space: normal;
+                padding: 0 10px;
+            }
+
+            .envelope-back::after {
+                font-size: 18px;
+                bottom: 20px;
+            }
+
+            .coffee-stain.stain1 {
+                width: 50px;
+                height: 50px;
+            }
+
+            .coffee-stain.stain2 {
+                width: 35px;
+                height: 35px;
+            }
+
+            .hidden-message {
+                font-size: 12px;
+                bottom: 30px;
+                padding: 0 15px;
+            }
+
+            .infinity-stone {
+                width: 20px;
+                height: 20px;
+            }
+
+            .gauntlet-reward {
+                font-size: 18px;
+                padding: 30px 35px;
+                max-width: 88vw;
+            }
+
+            .gauntlet-reward .stones-display {
+                font-size: 30px;
+                letter-spacing: 5px;
+            }
+
+            .infinity-button {
+                width: 60px;
+                height: 60px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .infinity-button .infinity-symbol {
+                font-size: 30px;
+            }
+
+            .fortune-cookie {
+                width: 50px;
+                height: 50px;
+                bottom: 20px;
+                left: 20px;
+            }
+
+            .fortune-message {
+                bottom: 80px;
+                left: 20px;
+                max-width: 200px;
+                font-size: 12px;
+            }
+
+            .hint {
+                font-size: 12px;
+                bottom: 15px;
+                right: 15px;
+                left: 15px;
+                text-align: center;
+            }
+
+            /* Reduce petal count on mobile */
+            .petal:nth-child(n+8) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .letter h1 {
+                font-size: 28px;
+            }
+
+            .letter p {
+                font-size: 16px;
+            }
+
+            .letter .signature {
+                font-size: 18px;
+            }
+
+            .instruction {
+                font-size: 16px;
+                bottom: -70px;
+                white-space: normal;
+            }
+        }
+
+        /* Landscape mode - make page scrollable */
+        @media (orientation: landscape) and (max-height: 500px) {
+            body {
+                overflow: auto;
+                align-items: flex-start;
+                padding: 40px 0 80px;
+            }
+
+            .container {
+                margin-top: 60px;
+                margin-bottom: 120px;
+            }
+
+            .stars {
+                position: fixed;
+            }
+        }
+
+
+
+    </style>
+</head>
+<body>
+    <!-- Disclaimer overlay -->
+    <div class="disclaimer-overlay" id="disclaimerOverlay">
+        <div class="disclaimer-box">
+            <span class="disclaimer-icon">💌</span>
+            <div class="disclaimer-title">Before You Open This...</div>
+            <div class="disclaimer-text">
+                If you're in a relationship or talking to someone, please close this — I meant no disrespect to you, your relationship, or them. But if you're curious, or single <em>(preferably)</em>, then by all means...
+            </div>
+            <div class="disclaimer-btn" id="disclaimerContinue">Continue ✨</div>
+        </div>
+    </div>
+
+    <!-- Stars background -->
+    <div class="stars" id="starsContainer"></div>
+
+    <!-- Falling petals -->
+    <div id="petalsContainer"></div>
+
+    <div class="container">
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <div class="stones-hint" id="stonesHint">✨ Look around... 6 glowing stones are hidden on the page. Collect them all! ✨</div>
+            <div class="hidden-message" id="hiddenMsg">
+                "Some words wait years to be spoken. These were mine. Now they're yours, Briana."
+            </div>
+            
+            <div class="envelope">
+                <div class="envelope-back">
+                </div>
+                <div class="twine-vertical"></div>
+                <div class="twine-knot"></div>
+                
+                <div class="envelope-flap"></div>
+                <div class="wax-seal" id="waxSeal"></div>
+                
+                <div class="letter" id="letter">
+                    <div class="coffee-stain stain1"></div>
+                    <div class="coffee-stain stain2"></div>
+                    
+                    <div class="close-btn" id="closeBtn"></div>
+                    
+                    <div class="date-stamp">A lifetime ago... and forever more</div>
+                    
+                    <h1>Dear Briana,</h1>
+                    
+                    <p class="fade-in-text">
+                        I've held this quietly for a long time, unsure of when—or if—it should ever be said. Some things don't fade with time; they simply learn how to wait.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        But these words have lived inside me for years now—quietly burning, patiently waiting—and I can't carry them alone anymore. So forgive me for being selfish tonight. I need to set them free.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        We didn't share a thousand moments. We didn't have entire chapters together. But the few pages we did share—I remember them as if they happened yesterday. The way you looked at me. The sound of your laugh, caught off guard. Small, ordinary moments that somehow branded themselves into my memory and refused to fade. Most people forget the little things. I never could. Not with you.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        You turned brief encounters into constellations I've been tracing ever since.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        A song drifts through my headphones and I wonder if it would make you smile. I see something beautiful, or strange, or funny—and still, after all this time, I find myself wishing I could share it with you. You've lived in the background of my thoughts like a melody I never learned the words to, but always recognized.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        Steve Rogers waited an entire lifetime for the right dance. I understand that now. Not because I've been waiting for you to return to my life—but because some people leave a mark so deep that time doesn't soften it. It only teaches you how rare it was. You are that kind of rare, Briana. The kind that makes a man question every almost and what if he's ever known.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        Before I say anything more, there's something I need to place where it belongs—between the words, not around them:
+                    </p>
+                    
+                    <p class="fade-in-text" style="font-style: italic; text-indent: 0; padding-left: 20px; border-left: 3px solid rgba(212, 175, 55, 0.3); margin: 30px 0;">
+                        I knew you not by borrowed time,<br>
+                        Nor by the promises we never made,<br>
+                        But by the way your presence stayed with me,<br>
+                        Long after moments learned my name,<br>
+                        When all that passed refused to fade.<br><br>
+                        I carried you until silence<br>
+                        Began to feel untrue,<br>
+                        Until saying nothing asked more of me<br>
+                        Than telling this to you.<br><br>
+                        If feelings are beyond hands held tight,<br>
+                        Beyond the courage to be seen,<br>
+                        Then mine were written quietly<br>
+                        In the spaces held between—<br>
+                        The unsaid words,<br>
+                        Where silence learned to speak.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        Tony Stark once said, "Part of the journey is the end." But I think part of the journey is also the confession—the moment you stop pretending the ache isn't there. These feelings have been my quiet constant for years, growing roots in places I never gave them permission to grow.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        I want to be clear about something important. I'm not expecting anything from you—no reply, no explanation, no reassurance. This letter isn't a question, and it doesn't require an answer. Please don't feel any responsibility to carry this with you or to respond in any way.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        I only wanted you to know that you mattered to me, and that you still do, in a quiet and respectful way. That knowledge is enough for me. What you do with it—if anything at all—is entirely up to you.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        Writing this isn't about changing the present. It's about finally being honest with the past, and letting it rest where it belongs.
+                    </p>
+                    
+                    <p class="fade-in-text">
+                        Thank you for the moments we shared, however small they may have seemed at the time. They stayed with me longer than you'll ever know, and that alone was worth telling you.
+                    </p>
+                    
+                    <div class="signature fade-in-text">
+                        Until our paths cross again<br>
+                        <span style="font-size: 18px; opacity: 0.7;">(P.S. — Tap the glowing stones scattered around for a hidden message ✨)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instruction">✨ Click the seal to unveil your letter ✨</div>
+        </div>
+    </div>
+
+    <!-- Infinity Stones -->
+    <div class="infinity-stone stone-space" id="stoneSpace" title="Space Stone"></div>
+    <div class="infinity-stone stone-reality" id="stoneReality" title="Reality Stone"></div>
+    <div class="infinity-stone stone-power" id="stonePower" title="Power Stone"></div>
+    <div class="infinity-stone stone-mind" id="stoneMind" title="Mind Stone"></div>
+    <div class="infinity-stone stone-time" id="stoneTime" title="Time Stone"></div>
+    <div class="infinity-stone stone-soul" id="stoneSoul" title="Soul Stone"></div>
+
+    <!-- Fortune cookie -->
+    <div class="fortune-cookie" id="fortuneCookie">
+        <span style="font-size: 42px; line-height: 1;">🌹</span>
+    </div>
+    <div class="fortune-message" id="fortuneMessage">
+        <div class="fortune-close" id="fortuneClose"></div>
+        <span id="fortuneText">"The best love story is the one you're brave enough to start" ✨</span>
+    </div>
+
+    <!-- Gauntlet reward -->
+    <div class="gauntlet-reward" id="gauntletReward">
+        <div class="gauntlet-close" id="gauntletClose"></div>
+        <div>✨ You've found all the Infinity Stones! ✨</div>
+        <div style="font-size: 22px; margin-top: 15px; font-weight: 600;">
+            "Like the stones scattered across the universe,<br>
+            my feelings for you exist in every moment,<br>
+            in every dimension, across all time..."
+        </div>
+    </div>
+
+    <!-- Infinity button - shows after collecting all stones -->
+    <div class="infinity-button" id="infinityButton" title="View Infinity Message">
+        <div class="infinity-symbol">∞</div>
+    </div>
+
+    <div class="hint" id="hint">💡 Scroll through the letter to reveal each paragraph...</div>
+</div>
+
+    <script>
+        // Disclaimer screen
+        const disclaimerOverlay = document.getElementById('disclaimerOverlay');
+        const disclaimerContinue = document.getElementById('disclaimerContinue');
+        
+        disclaimerContinue.addEventListener('click', function() {
+            disclaimerOverlay.classList.add('hidden');
+        });
+
+        // Generate stars
+        const starsContainer = document.getElementById('starsContainer');
+        
+        // Regular stars
+        for (let i = 0; i < 80; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // Constellation for letter B
+        const constellationB = [
+            // Vertical line
+            { x: 30, y: 20 }, { x: 30, y: 30 }, { x: 30, y: 40 }, { x: 30, y: 50 }, { x: 30, y: 60 },
+            // Top curve
+            { x: 35, y: 22 }, { x: 40, y: 25 }, { x: 42, y: 30 }, { x: 40, y: 35 }, { x: 35, y: 38 },
+            // Bottom curve
+            { x: 35, y: 42 }, { x: 40, y: 45 }, { x: 43, y: 50 }, { x: 40, y: 55 }, { x: 35, y: 58 }
+        ];
+
+        // Create constellation stars
+        constellationB.forEach((point, index) => {
+            const star = document.createElement('div');
+            star.className = 'star constellation-star';
+            star.style.left = point.x + '%';
+            star.style.top = point.y + '%';
+            star.style.transitionDelay = (index * 0.1) + 's';
+            starsContainer.appendChild(star);
+        });
+
+        // Create constellation lines
+        function createLine(x1, y1, x2, y2, delay) {
+            const line = document.createElement('div');
+            line.className = 'constellation-line';
+            
+            const deltaX = x2 - x1;
+            const deltaY = y2 - y1;
+            const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const angle = Math.atan2(deltaY, deltaY) * 180 / Math.PI;
+            
+            line.style.left = x1 + '%';
+            line.style.top = y1 + '%';
+            line.style.width = length + '%';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transitionDelay = delay + 's';
+            
+            starsContainer.appendChild(line);
+        }
+
+        // Connect the constellation points
+        for (let i = 0; i < constellationB.length - 1; i++) {
+            createLine(
+                constellationB[i].x, 
+                constellationB[i].y, 
+                constellationB[i + 1].x, 
+                constellationB[i + 1].y,
+                1 + (i * 0.1)
+            );
+        }
+
+        // Generate falling petals
+        const petalsContainer = document.getElementById('petalsContainer');
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            petal.style.left = Math.random() * 100 + '%';
+            petal.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            petal.style.animationDelay = Math.random() * 5 + 's';
+            petalsContainer.appendChild(petal);
+            
+            setTimeout(() => petal.remove(), 20000);
+        }
+
+        for (let i = 0; i < 15; i++) {
+            createPetal();
+        }
+        
+        setInterval(createPetal, 2000);
+
+        // Envelope interaction
+        const envelopeWrapper = document.getElementById('envelopeWrapper');
+        const waxSeal = document.getElementById('waxSeal');
+        const letter = document.getElementById('letter');
+        const closeBtn = document.getElementById('closeBtn');
+        const hint = document.getElementById('hint');
+        const hiddenMsg = document.getElementById('hiddenMsg');
+
+        waxSeal.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!envelopeWrapper.classList.contains('opened')) {
+                envelopeWrapper.classList.add('opened');
+                setTimeout(() => {
+                    hint.classList.add('show');
+                    setTimeout(() => hint.classList.remove('show'), 4000);
+                }, 1000);
+            }
+        });
+
+        // Close letter
+        closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            envelopeWrapper.classList.remove('opened');
+            
+            // Reset paragraph visibility
+            const paragraphs = document.querySelectorAll('.fade-in-text');
+            paragraphs.forEach(p => p.classList.remove('visible'));
+
+            // Show hidden message after closing
+            setTimeout(() => {
+                hiddenMsg.classList.add('revealed');
+            }, 800);
+
+        });
+
+        // Hide hidden message when opening
+        waxSeal.addEventListener('click', function() {
+            hiddenMsg.classList.remove('revealed');
+        });
+
+        // Scroll animation for paragraphs
+        // Sparkle trail on letter scroll
+        let sparkleThrottle = 0;
+        letter.addEventListener('scroll', function(e) {
+            const paragraphs = document.querySelectorAll('.fade-in-text');
+            
+            paragraphs.forEach((p, index) => {
+                const rect = p.getBoundingClientRect();
+                const letterRect = letter.getBoundingClientRect();
+                
+                if (rect.top < letterRect.bottom - 100) {
+                    setTimeout(() => {
+                        p.classList.add('visible');
+                    }, index * 100);
+                }
+            });
+
+            // Spawn sparkles while scrolling
+            const now = Date.now();
+            if (now - sparkleThrottle > 60) {
+                sparkleThrottle = now;
+                for (let i = 0; i < 3; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    const size = Math.random() * 5 + 3;
+                    sparkle.style.setProperty('--size', size + 'px');
+                    sparkle.style.left = (Math.random() * 90 + 5) + '%';
+                    sparkle.style.top = (letter.scrollTop + Math.random() * letter.clientHeight) + 'px';
+                    letter.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 1200);
+                }
+            }
+
+            // Show fortune cookie when scrolled to bottom
+            const scrolledToBottom = letter.scrollHeight - letter.scrollTop <= letter.clientHeight + 50;
+            if (scrolledToBottom) {
+                document.getElementById('fortuneCookie').classList.add('show');
+            }
+        });
+
+        // Fortune cookie interaction with multiple messages
+        const fortuneCookie = document.getElementById('fortuneCookie');
+        const fortuneMessage = document.getElementById('fortuneMessage');
+        const fortuneText = document.getElementById('fortuneText');
+        const fortuneClose = document.getElementById('fortuneClose');
+        
+        const fortunes = [
+            '"The best love story is the one you\'re brave enough to start" ✨',
+            '"Some hearts understand each other, even in silence" 💫',
+            '"True courage is telling someone they make your world brighter" 🌟',
+            '"The universe conspires to bring together souls meant to meet" ⭐',
+            '"Love begins the moment you find the courage to be vulnerable" 💚'
+        ];
+        
+        let fortuneIndex = 0;
+
+        fortuneCookie.addEventListener('click', function() {
+            fortuneText.textContent = fortunes[fortuneIndex];
+            fortuneMessage.classList.add('show');
+            fortuneIndex = (fortuneIndex + 1) % fortunes.length;
+        });
+
+        // Close button for fortune message
+        fortuneClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fortuneMessage.classList.remove('show');
+        });
+
+        // Infinity Stones collection
+        const gauntletReward = document.getElementById('gauntletReward');
+        const infinityButton = document.getElementById('infinityButton');
+        const stonesHint = document.getElementById('stonesHint');
+        let stonesCollected = new Set();
+        const totalStones = 6;
+
+        // Show stones hint after 5 seconds
+        setTimeout(() => {
+            if (stonesCollected.size === 0) {
+                stonesHint.classList.add('show');
+                // Auto-hide after 6 seconds
+                setTimeout(() => {
+                    stonesHint.classList.remove('show');
+                }, 6000);
+            }
+        }, 5000);
+
+        const stones = ['stoneSpace', 'stoneReality', 'stonePower', 'stoneMind', 'stoneTime', 'stoneSoul'];
+        
+        stones.forEach(stoneId => {
+            const stone = document.getElementById(stoneId);
+            stone.addEventListener('click', function() {
+                if (!stonesCollected.has(stoneId)) {
+                    stonesCollected.add(stoneId);
+                    this.classList.add('collected');
+
+                    // Hide the hint once they start collecting
+                    stonesHint.classList.remove('show');
+                    
+                    // Remove stone after animation
+                    setTimeout(() => {
+                        this.style.display = 'none';
+                    }, 800);
+
+                    // Check if all stones collected
+                    if (stonesCollected.size === totalStones) {
+                        setTimeout(() => {
+                            gauntletReward.classList.add('show');
+                            
+                            // Show infinity button after reward message disappears
+                            setTimeout(() => {
+                                infinityButton.classList.add('show');
+                            }, 6000);
+                            
+                            // Auto-hide reward after 6 seconds
+                            setTimeout(() => {
+                                gauntletReward.classList.remove('show');
+                            }, 6000);
+                        }, 1000);
+                    }
+                }
+            });
+        });
+
+        // Infinity button to show reward again
+        infinityButton.addEventListener('click', function() {
+            gauntletReward.classList.add('show');
+        });
+
+        // Close buttons for gauntlet reward
+        const gauntletClose = document.getElementById('gauntletClose');
+        
+        gauntletClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            gauntletReward.classList.remove('show');
+        });
+
+        // Click gauntlet reward background to close it
+        gauntletReward.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+
+        // Easter egg: Click hearts to create heart pop effect
+        let heartClickCount = 0;
+        document.addEventListener('click', function(e) {
+            if (e.target.textContent.includes('♥')) {
+                heartClickCount++;
+                
+                const heartPop = document.createElement('div');
+                heartPop.className = 'heart-pop';
+                heartPop.textContent = '♥';
+                heartPop.style.left = e.clientX + 'px';
+                heartPop.style.top = e.clientY + 'px';
+                document.body.appendChild(heartPop);
+                
+                setTimeout(() => heartPop.remove(), 1000);
+
+                // Special message after 3 heart clicks
+                if (heartClickCount === 3) {
+                    const specialHint = document.getElementById('hint');
+                    specialHint.textContent = '💖 You found the hidden hearts! Keep exploring...';
+                    specialHint.classList.add('show');
+                    setTimeout(() => {
+                        specialHint.classList.remove('show');
+                        specialHint.textContent = '💡 Scroll through the letter to reveal each paragraph...';
+                    }, 3000);
+                }
+            }
+        });
+
+        // Show first paragraph immediately when letter opens
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.target.classList.contains('opened')) {
+                    setTimeout(() => {
+                        const firstParagraph = document.querySelector('.fade-in-text');
+                        if (firstParagraph) {
+                            firstParagraph.classList.add('visible');
+                        }
+                    }, 900);
+                }
+            });
+        });
+
+        observer.observe(envelopeWrapper, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        // Wax seal hover sound effect simulation (visual feedback)
+        waxSeal.addEventListener('mouseenter', function() {
+            this.style.filter = 'brightness(1.2)';
+        });
+
+        waxSeal.addEventListener('mouseleave', function() {
+            this.style.filter = 'brightness(1)';
+        });
+    </script>
+</body>
+</html>
