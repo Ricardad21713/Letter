@@ -1868,29 +1868,27 @@
             this.style.filter = 'brightness(1)';
         });
         // ── Global View Counter (secret — only visible to you) ────
-        // Uses counterapi.dev — free, no account, syncs across all devices.
+        // Direct REST call — no library needed, increments on every page load.
         (function () {
             const counterEl = document.getElementById('viewCounter');
             const countEl   = document.getElementById('viewCount');
             const labelEl   = document.getElementById('viewTimesLabel');
 
-            // Load CounterAPI from CDN then hit the counter
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js';
-            script.onload = function () {
-                try {
-                    const client = new Counter({ version: 'v1', namespace: 'ricardo-letter-2024' });
-                    client.up('briana-opens')
-                        .then(result => {
-                            const count = result.value || 1;
-                            countEl.textContent = count;
-                            labelEl.textContent = count === 1 ? 'time' : 'times';
-                        })
-                        .catch(() => { countEl.textContent = '—'; });
-                } catch(e) { countEl.textContent = '—'; }
-            };
-            script.onerror = function () { countEl.textContent = '—'; };
-            document.head.appendChild(script);
+            // countapi.xyz: auto-creates the key on first hit, then increments each time
+            fetch('https://api.countapi.xyz/hit/for-briana.space/visits')
+                .then(r => r.json())
+                .then(data => {
+                    const count = data.value;
+                    if (typeof count === 'number') {
+                        countEl.textContent = count;
+                        labelEl.textContent = count === 1 ? 'time' : 'times';
+                    } else {
+                        countEl.textContent = '—';
+                    }
+                })
+                .catch(() => {
+                    countEl.textContent = '—';
+                });
 
             // ── Secret reveal: press "R" three times quickly ──────
             let keyPressCount = 0;
