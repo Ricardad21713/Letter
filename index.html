@@ -1867,28 +1867,32 @@
         waxSeal.addEventListener('mouseleave', function() {
             this.style.filter = 'brightness(1)';
         });
-        // ── View Counter (secret — only visible to you) ───────────
+        // ── Global View Counter (secret — only visible to you) ────
+        // Uses counterapi.dev — free, no account, syncs across all devices.
         (function () {
-            const KEY = 'letter_view_count';
-            let count = 0;
-            try {
-                count = parseInt(localStorage.getItem(KEY) || '0', 10);
-                if (isNaN(count)) count = 0;
-                count += 1;
-                localStorage.setItem(KEY, count);
-            } catch (e) {
-                count = 1;
-            }
-
             const counterEl = document.getElementById('viewCounter');
             const countEl   = document.getElementById('viewCount');
             const labelEl   = document.getElementById('viewTimesLabel');
 
-            countEl.textContent = count;
-            labelEl.textContent = count === 1 ? 'time' : 'times';
+            // Load CounterAPI from CDN then hit the counter
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js';
+            script.onload = function () {
+                try {
+                    const client = new Counter({ version: 'v1', namespace: 'ricardo-letter-2024' });
+                    client.up('briana-opens')
+                        .then(result => {
+                            const count = result.value || 1;
+                            countEl.textContent = count;
+                            labelEl.textContent = count === 1 ? 'time' : 'times';
+                        })
+                        .catch(() => { countEl.textContent = '—'; });
+                } catch(e) { countEl.textContent = '—'; }
+            };
+            script.onerror = function () { countEl.textContent = '—'; };
+            document.head.appendChild(script);
 
             // ── Secret reveal: press "R" three times quickly ──────
-            // On mobile: triple-tap the very top-right corner of the screen
             let keyPressCount = 0;
             let keyTimer = null;
 
@@ -1930,7 +1934,6 @@
                 clearTimeout(hideTimer);
                 if (counterVisible) {
                     counterEl.classList.add('visible');
-                    // Auto-hide after 4 seconds
                     hideTimer = setTimeout(() => {
                         counterEl.classList.remove('visible');
                         counterVisible = false;
