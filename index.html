@@ -1299,6 +1299,57 @@
             }
         }
 
+        /* View Counter */
+        .view-counter {
+            position: fixed;
+            top: 18px;
+            right: 20px;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(10, 31, 26, 0.75);
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            border-radius: 20px;
+            padding: 6px 14px 6px 10px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+            font-family: 'Dancing Script', cursive;
+            color: rgba(212, 175, 55, 0.9);
+            font-size: 15px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.8s ease 1s, transform 0.8s ease 1s;
+        }
+
+        .view-counter.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            cursor: default;
+        }
+
+        .view-counter-icon {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .view-counter-count {
+            font-weight: 700;
+            font-size: 16px;
+            color: #d4af37;
+        }
+
+        @media (max-width: 480px) {
+            .view-counter {
+                top: 12px;
+                right: 12px;
+                font-size: 13px;
+                padding: 5px 10px 5px 8px;
+            }
+        }
+
         /* Landscape mode - make page scrollable */
         @media (orientation: landscape) and (max-height: 500px) {
             body {
@@ -1332,6 +1383,14 @@
             </div>
             <div class="disclaimer-btn" id="disclaimerContinue">Continue ✨</div>
         </div>
+    </div>
+
+    <!-- View Counter -->
+    <div class="view-counter" id="viewCounter">
+        <span class="view-counter-icon">👁</span>
+        <span>Opened</span>
+        <span class="view-counter-count" id="viewCount">—</span>
+        <span id="viewTimesLabel">times</span>
     </div>
 
     <!-- Stars background -->
@@ -1808,6 +1867,80 @@
         waxSeal.addEventListener('mouseleave', function() {
             this.style.filter = 'brightness(1)';
         });
+        // ── View Counter (secret — only visible to you) ───────────
+        (function () {
+            const KEY = 'letter_view_count';
+            let count = 0;
+            try {
+                count = parseInt(localStorage.getItem(KEY) || '0', 10);
+                if (isNaN(count)) count = 0;
+                count += 1;
+                localStorage.setItem(KEY, count);
+            } catch (e) {
+                count = 1;
+            }
+
+            const counterEl = document.getElementById('viewCounter');
+            const countEl   = document.getElementById('viewCount');
+            const labelEl   = document.getElementById('viewTimesLabel');
+
+            countEl.textContent = count;
+            labelEl.textContent = count === 1 ? 'time' : 'times';
+
+            // ── Secret reveal: press "R" three times quickly ──────
+            // On mobile: triple-tap the very top-right corner of the screen
+            let keyPressCount = 0;
+            let keyTimer = null;
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    keyPressCount++;
+                    clearTimeout(keyTimer);
+                    if (keyPressCount >= 3) {
+                        keyPressCount = 0;
+                        toggleCounter();
+                    } else {
+                        keyTimer = setTimeout(() => { keyPressCount = 0; }, 800);
+                    }
+                }
+            });
+
+            // Mobile: triple-tap the top-right 60×60px corner
+            let tapCount = 0;
+            let tapTimer = null;
+            document.addEventListener('touchstart', function (e) {
+                const touch = e.touches[0];
+                const inCorner = touch.clientX > window.innerWidth - 70 && touch.clientY < 70;
+                if (!inCorner) return;
+                tapCount++;
+                clearTimeout(tapTimer);
+                if (tapCount >= 3) {
+                    tapCount = 0;
+                    toggleCounter();
+                } else {
+                    tapTimer = setTimeout(() => { tapCount = 0; }, 800);
+                }
+            }, { passive: true });
+
+            let counterVisible = false;
+            let hideTimer = null;
+
+            function toggleCounter() {
+                counterVisible = !counterVisible;
+                clearTimeout(hideTimer);
+                if (counterVisible) {
+                    counterEl.classList.add('visible');
+                    // Auto-hide after 4 seconds
+                    hideTimer = setTimeout(() => {
+                        counterEl.classList.remove('visible');
+                        counterVisible = false;
+                    }, 4000);
+                } else {
+                    counterEl.classList.remove('visible');
+                }
+            }
+        })();
+
     </script>
 </body>
 </html>
